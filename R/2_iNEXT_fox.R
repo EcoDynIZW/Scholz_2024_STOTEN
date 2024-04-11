@@ -49,18 +49,38 @@ psmelt(PSGHelm) %>%
     arrange(desc(prevalence_total)) %>%
     relocate(starts_with("prevalence"), .after = genus) %>%
     mutate(across(where(is.numeric), \(x) round(x, 2))) %>%
-    mutate(CI = paste0("+/", round(
+    mutate(CI_total = paste0("+/", round(
                                  prevalence_total -
                                  propCI(n = 141, p = prevalence_total/100,
                                         alpha = 0.05)$
                                  result[, "upper"] * 100,
-                                 2))) %>%
+                                 2)),
+           CI_Brandenburg = paste0("+/", round(
+                                 prevalence_Brandenburg -
+                                 propCI(n = 43,
+                                        p = prevalence_Brandenburg/100,
+                                        alpha = 0.05)$
+                                 result[, "upper"] * 100,
+                                 2)),
+           CI_Berlin = paste0("+/", round(
+                                 prevalence_Berlin -
+                                 propCI(n = 98,
+                                        p = prevalence_Berlin/100,
+                                        alpha = 0.05)$
+                                 result[, "upper"] * 100,
+                                 2)))%>%
+        relocate(CI_Berlin, .after = prevalence_Berlin) %>%
+        relocate(CI_Brandenburg, .after = prevalence_Brandenburg) %>%
+        mutate(CI_Berlin = gsub("\\+\\/0", "0", CI_Berlin),
+               CI_Brandenburg = gsub("\\+\\/0", "0", CI_Brandenburg)) %>%
     gt() %>%
     cols_label( 
         prevalence_Berlin = html("% prevalence <br> Berlin (n=98)"),
+        CI_Berlin = html("95% confidence <br> interval in % (Berlin)"),
         prevalence_Brandenburg = html("% prevalence <br> Brandenburg (n=43)"),
+        CI_Brandenburg = html("95% confidence <br> interval in % (Brandenburg)"),
         prevalence_total = html("% prevalence <br> Total (n=141)"),
-        CI = html("95% confidence <br> interval in %")
+        CI_total = html("95% confidence <br> interval in %")
     ) %>%
     tab_style(
         style = cell_text(style = "italic"),
